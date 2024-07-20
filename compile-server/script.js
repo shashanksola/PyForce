@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { exec } = require('child_process');
 const path = require('path');
+const { lstatSync, readdirSync, createReadStream } = require('fs');
 
 const PACKAGES = process.env.PACKAGES;
 const BUCKET_NAME = process.env.BUCKET_NAME;
