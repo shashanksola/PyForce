@@ -1,5 +1,40 @@
 .main-container {
     display: flex;
+    flex-direction: row;
+}
+
+.file-tree {
+    width: 30vw;
+    background-color: lightgrey;
+    height: 70vh;
+    scroll-behavior: auto;
+}
+
+.non-editor-content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.dropbox-container {
+    padding: 16px;
+    height: 30vh;
+    background-color: black;
+    color: grey;
+
+}
+
+.dropzone {
+    border: 1px dashed grey;
+    height: 10vh;
+    display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.files-container {
+    overflow: auto;
+    height: 20vh;
 }
