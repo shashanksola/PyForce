@@ -5,7 +5,7 @@ RUN apt-get install -y curl
 RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
 RUN apt-get upgrade -y
 RUN apt-get install -y nodejs
-RUN pip install --upgrade pip -y
+RUN pip install --upgrade pip
 
 
 WORKDIR /home/app/
@@ -20,4 +20,4 @@ RUN npm install
 RUN chmod +x main.sh
 RUN chmod +x script.js
 
-ENTRYPOINT [ "node script.js" ]
+ENTRYPOINT [ "/home/app/main.sh" ]

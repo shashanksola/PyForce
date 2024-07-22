@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { exec } = require('child_process');
 const path = require('path');
-const { lstatSync, readdirSync, createReadStream } = require('fs');
+const { lstatSync, readdirSync, createReadStream, rmSync } = require('fs');
 
 const PACKAGES = process.env.PACKAGES;
 const BUCKET_NAME = process.env.BUCKET_NAME;
@@ -12,7 +12,7 @@ function publishLog(log) {
 }
 
 async function init() {
-    console.log('Copying files from S3 Bucket')
+    console.log('Installing Packages...');
 
     const outDirPath = path.join(__dirname, 'output');
     const fileDirPath = path.join(__dirname);
@@ -28,7 +28,7 @@ async function init() {
     })
 
     packageInstaller.on('close', async () => {
-        console('All Pacckages installed Successfully');
+        console.log('All Pacckages installed Successfully');
     })
 
     const executePythonFile = exec(`python main.py`);
@@ -42,7 +42,7 @@ async function init() {
     })
 
     executePythonFile.on('close', async () => {
-        console('Excecution Completed');
+        console.log('Excecution Completed');
 
         let distFolderPath;
         let distFolderContents;
@@ -56,6 +56,11 @@ async function init() {
         }
 
         publishLog('Starting to Upload Output Files...');
+
+        const directoryPath = '/home/app/node_modules';
+
+        rmSync(directoryPath, { recursive: true });
+
         for (const file of distFolderContents) {
             const filePath = path.join(distFolderPath, file);
             if (lstatSync(filePath).isDirectory()) continue;
@@ -63,14 +68,14 @@ async function init() {
             console.log('Uploading ', filePath);
             publishLog(`Uploading ${file}`);
 
-            const command = new PutObjectCommand({
-                Bucket: BUCKET_NAME,
-                Key: `__outputs/${PROJECT_ID}/${file}`,
-                Body: createReadStream(filePath),
-                ContentType: mime.lookup(filePath)
-            });
+            // const command = new PutObjectCommand({
+            //     Bucket: BUCKET_NAME,
+            //     Key: `__outputs/${PROJECT_ID}/${file}`,
+            //     Body: createReadStream(filePath),
+            //     ContentType: mime.lookup(filePath)
+            // });
 
-            await s3Client.send(command);
+            //await s3Client.send(command);
         }
 
         publishLog(`S3 Upload Successfull`);

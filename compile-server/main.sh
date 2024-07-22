@@ -1,3 +1,3 @@
 #!/bin/bash
 
-export S3_FILE_PATH=""
+exec node script.js
