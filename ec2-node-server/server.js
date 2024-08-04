@@ -1,13 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const { open } = require('sqlite');
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-require('dotenv');
 
 const databasePath = path.join(__dirname, 'compiler.db');
-console.log(databasePath);
 
 let database = null;
 const app = express();
@@ -33,15 +32,13 @@ app.post('/login/', async (req, res) => {
     const { username, password } = req.body;
 
     const getUserQuery = `SELECT * FROM user WHERE username = '${username}';`
-    const databaseUser = database.get(getUserQuery);
+    const databaseUser = await database.get(getUserQuery);
 
     if (databaseUser === undefined) {
         res.status(400);
         res.send("User Does Not Exist");
     } else {
-        console.log(databaseUser);
         const isPasswordMathced = await bcrypt.compare(password, databaseUser.password);
-
 
         if (isPasswordMathced) {
             const payload = {
@@ -81,5 +78,9 @@ app.post("/register/", async (request, response) => {
         response.send("User already exists");
     }
 });
+
+app.post('/compile/', checkJWT, async (req, res) => {
+    const { s3Link, packages } = req.body;
+})
 
 initializeDbAndServer();
