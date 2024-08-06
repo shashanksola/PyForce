@@ -5,6 +5,7 @@ const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const { z } = require('zod');
 
 const databasePath = path.join(__dirname, 'compiler.db');
 
@@ -29,7 +30,18 @@ const initializeDbAndServer = async () => {
 };
 
 app.post('/login/', async (req, res) => {
-    const { username, password } = req.body;
+    const schema = z.object({
+        username: z.string().max(32).min(8),
+        password: z.string()
+    })
+
+    const isSafe = schema.safeParse(req.body);
+
+    if (isSafe.error) {
+        res.status(400);
+        res.send(isSafe.error);
+        return;
+    }
 
     const getUserQuery = `SELECT * FROM user WHERE username = '${username}';`
     const databaseUser = await database.get(getUserQuery);
@@ -55,6 +67,21 @@ app.post('/login/', async (req, res) => {
 });
 
 app.post("/register/", async (request, response) => {
+    const schema = z.object({
+        username: z.string().max(32).min(8),
+        password: z.string(),
+        gender: z.string().isOptional(),
+        location: z.string().isOptional()
+    })
+
+    const isSafe = schema.safeParse(req.body);
+
+    if (isSafe.error) {
+        res.status(400);
+        res.send(isSafe.error);
+        return;
+    }
+
     const { username, password, gender, location } = request.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const selectUserQuery = `SELECT * FROM user WHERE username = '${username}'`;
@@ -79,8 +106,16 @@ app.post("/register/", async (request, response) => {
     }
 });
 
+app.post('/new-project/', async (req, res) => {
+    const { projectName, username } = req.body;
+
+    createS3Folder(projectName, username);
+})
+
 app.post('/compile/', checkJWT, async (req, res) => {
-    const { s3Link, packages } = req.body;
+    const { s3Link, packages, id } = req.body;
+
+    uploadToS3();
 })
 
 initializeDbAndServer();
